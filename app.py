@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-MODEL_PATH = "helmet_detect_model.h5"
+MODEL_PATH = "./helmet_detect_model.h5"
 IMG_SIZE = 50
 
 try:
