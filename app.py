@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import cv2
+from PIL import Image
 import numpy as np
 from tensorflow.keras.models import load_model
 import os
@@ -19,21 +19,23 @@ except Exception as e:
 
 
 def model_predict(image_file, model):
-    file_bytes = np.frombuffer(image_file.read(), np.uint8)
-    pic_array = cv2.imdecode(file_bytes, cv2.IMREAD_GRAYSCALE)
+    try:
+        img = Image.open(image_file).convert("L")
+    except Exception as e:
+        raise ValueError(f"Error processing image: {e}")
 
-    if pic_array is None:
-        raise ValueError("Unable to decode image file")
+    img_resized = img.resize((IMG_SIZE, IMG_SIZE))
 
-    new_array = cv2.resize(pic_array, (IMG_SIZE, IMG_SIZE))
-    img_batch = np.expand_dims(new_array, axis=0)
-    uimg = np.expand_dims(img_batch, axis=-1)
+    img_array = np.array(img_resized)
 
-    uimg = uimg / 255.0
+    img_batch = np.expand_dims(img_array, axis=0)
+    img_batch = np.expand_dims(img_batch, axis=-1)
 
-    prediction = model.predict(uimg)
+    img_batch = img_batch / 255.0
 
-    return prediction, pic_array.shape
+    prediction = model.predict(img_batch)
+
+    return prediction, img.size
 
 
 @app.route("/predict", methods=["POST"])
@@ -64,8 +66,10 @@ def predict():
         response = {
             "prediction": float(prediction[0][0]),
             "helmet_status": helmet_status,
-            "image_height": img_shape[0],
-            "image_width": img_shape[1],
+            "image_height": img_shape[
+                1
+            ],
+            "image_width": img_shape[0],
         }
         return jsonify(response), 200
 

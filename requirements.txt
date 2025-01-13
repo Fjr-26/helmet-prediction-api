@@ -6,6 +6,5 @@ numpy
 python-dotenv==1.0.0
 gunicorn
 flask_cors
-opencv-python
 tensorflow
-opencv-python-headless
+pillow
