@@ -8,3 +8,4 @@ gunicorn
 flask_cors
 opencv-python
 tensorflow
+opencv-python-headless
